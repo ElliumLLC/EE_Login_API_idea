@@ -4,7 +4,10 @@ import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider;
 import com.amazonaws.services.cognitoidp.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,7 +63,7 @@ public class UserController {
 
     @PostMapping(path = "/sign-in")
     public @ResponseBody
-    UserSignInResponse signIn(
+    ResponseEntity<UserSignInResponse> signIn(
             @RequestBody  UserSignInRequest userSignInRequest) {
 
         UserSignInResponse userSignInResponse = new UserSignInResponse();
@@ -130,12 +133,15 @@ public class UserController {
             }
 
         } catch (InvalidParameterException e) {
-            throw new CustomException(e.getErrorMessage());
+            // 400 status code
+            throw new CustomException(e.getErrorMessage(), new ResponseStatusException(HttpStatus.BAD_REQUEST));
         } catch (Exception e) {
-            throw new CustomException(e.getMessage());
+            // 401 status code
+            throw new CustomException(e.getMessage(), new ResponseStatusException(HttpStatus.UNAUTHORIZED));
         }
+
         cognitoClient.shutdown();
-        return userSignInResponse;
+        return new ResponseEntity<>(userSignInResponse, HttpStatus.OK);
 
     }
 
