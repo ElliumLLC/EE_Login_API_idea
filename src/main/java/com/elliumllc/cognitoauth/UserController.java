@@ -63,7 +63,7 @@ public class UserController {
 
     @PostMapping(path = "/sign-in")
     public @ResponseBody
-    ResponseEntity<UserSignInResponse> signIn(
+    UserSignInResponse signIn(
             @RequestBody  UserSignInRequest userSignInRequest) {
 
         UserSignInResponse userSignInResponse = new UserSignInResponse();
@@ -132,17 +132,18 @@ public class UserController {
                 userSignInResponse.setTokenType(authenticationResult.getTokenType());
             }
 
-        } catch (InvalidParameterException e) {
+        } catch (InvalidParameterException e ) {
             // 400 status code
-            throw new CustomException(e.getErrorMessage(), new ResponseStatusException(HttpStatus.BAD_REQUEST));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         } catch (Exception e) {
-            // 401 status code
-            throw new CustomException(e.getMessage(), new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
 
         cognitoClient.shutdown();
-        return new ResponseEntity<>(userSignInResponse, HttpStatus.OK);
+        return userSignInResponse;
 
     }
+
+
 
 }
